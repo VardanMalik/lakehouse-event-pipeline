@@ -8,6 +8,8 @@ networks:
 volumes:
   minio-data:
     name: lakehouse-minio-data
+  spark-events:
+    name: lakehouse-spark-events
 
 services:
   zookeeper:
@@ -107,3 +109,24 @@ services:
       exit 0;
       "
     restart: "no"
+
+  spark:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    image: lakehouse-spark:3.5.1
+    container_name: lakehouse-spark
+    hostname: spark
+    depends_on:
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    working_dir: /opt/spark-apps
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ../:/opt/spark-apps:ro
+      - spark-events:/opt/spark/events
+    networks:
+      - lakehouse-net
+    restart: unless-stopped
