@@ -3,7 +3,7 @@
 PYTHON ?= python
 POETRY ?= poetry
 COMPOSE ?= docker compose
-COMPOSE_FILE ?= docker-compose.yml
+COMPOSE_FILE ?= infrastructure/docker-compose.yml
 
 help:
 	@echo "Available targets:"
@@ -35,10 +35,10 @@ test:
 	$(POETRY) run pytest
 
 infra-up:
-	$(COMPOSE) -f $(COMPOSE_FILE) up -d
+	./scripts/infra-up.sh
 
 infra-down:
-	$(COMPOSE) -f $(COMPOSE_FILE) down -v
+	./scripts/infra-down.sh
 
 produce:
 	$(POETRY) run python -m lakehouse.producer
