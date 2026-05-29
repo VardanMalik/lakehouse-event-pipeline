@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterator
+from datetime import datetime, timezone
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 
@@ -39,3 +41,40 @@ def env_overrides(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, str]]:
 
     for key in list(applied.keys()):
         os.environ.pop(key, None)
+
+
+@pytest.fixture(autouse=True)
+def _reset_settings_cache() -> Iterator[None]:
+    """Ensure each test sees a fresh ``get_settings()`` cache."""
+    from lakehouse.common.config import get_settings
+
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+@pytest.fixture()
+def chdir_tmp(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Run the test from an empty directory so the project ``.env`` is not loaded."""
+    monkeypatch.chdir(tmp_path)
+    return tmp_path
+
+
+@pytest.fixture()
+def sample_customer_event():
+    """A minimal valid :class:`CustomerEvent` instance for use in tests."""
+    from lakehouse.common.schemas import CustomerEvent
+
+    return CustomerEvent(
+        event_id=str(uuid4()),
+        user_id="user-123",
+        session_id="session-abc",
+        event_type="page_view",
+        event_timestamp=datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc),
+        page_url="https://example.com/",
+        referrer=None,
+        device_type="desktop",
+        country="US",
+        properties={"campaign": "spring"},
+        revenue_usd=None,
+    )
