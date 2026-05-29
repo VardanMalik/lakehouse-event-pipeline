@@ -40,8 +40,10 @@ infra-up:
 infra-down:
 	./scripts/infra-down.sh
 
+PRODUCE_ARGS ?= --rate 100 --duration 60
+
 produce:
-	$(POETRY) run python -m lakehouse.producer
+	$(POETRY) run bash scripts/produce.sh $(PRODUCE_ARGS)
 
 stream:
 	$(POETRY) run python -m lakehouse.streaming

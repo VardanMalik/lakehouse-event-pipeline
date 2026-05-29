@@ -53,6 +53,15 @@ def _reset_settings_cache() -> Iterator[None]:
     get_settings.cache_clear()
 
 
+@pytest.fixture(autouse=True)
+def _reset_structlog() -> Iterator[None]:
+    """Reset structlog's global config so a closed capsys stream can't leak."""
+    import structlog
+
+    yield
+    structlog.reset_defaults()
+
+
 @pytest.fixture()
 def chdir_tmp(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Run the test from an empty directory so the project ``.env`` is not loaded."""

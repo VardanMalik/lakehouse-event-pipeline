@@ -37,7 +37,7 @@ The repo ships two helper scripts under `scripts/`:
 If the scripts are not yet executable, make them so once:
 
 ```sh
-chmod +x scripts/infra-up.sh scripts/infra-down.sh
+chmod +x scripts/infra-up.sh scripts/infra-down.sh scripts/produce.sh
 ```
 
 The Makefile targets `make infra-up` and `make infra-down` simply delegate to these scripts.
