@@ -63,6 +63,7 @@ pythonpath = ["src"]
 markers = [
     "integration: marks tests that require external services (deselect with '-m \"not integration\"')",
     "slow: marks slow-running tests",
+    "spark: marks tests that need a local Spark/Iceberg session (Java + PySpark)",
 ]
 
 [tool.coverage.run]

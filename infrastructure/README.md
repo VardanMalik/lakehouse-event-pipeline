@@ -37,7 +37,9 @@ The repo ships two helper scripts under `scripts/`:
 If the scripts are not yet executable, make them so once:
 
 ```sh
-chmod +x scripts/infra-up.sh scripts/infra-down.sh scripts/produce.sh
+chmod +x scripts/infra-up.sh scripts/infra-down.sh scripts/produce.sh \
+         scripts/create-topics.sh scripts/list-topics.sh \
+         scripts/describe-topic.sh scripts/consume-sample.sh
 ```
 
 The Makefile targets `make infra-up` and `make infra-down` simply delegate to these scripts.
@@ -100,6 +102,33 @@ If the volume itself is suspect, take the whole stack down with `--clean` and re
 **Host can't reach Kafka on `localhost:9092`.** That listener is `PLAINTEXT_HOST`. Confirm the container exposes it with `docker compose -f infrastructure/docker-compose.yml port kafka 9092`. From inside another compose service, use `kafka:29092` instead.
 
 **MinIO console login fails.** The console uses `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` (default `minioadmin` / `minioadmin`). If you changed the env vars after the volume was created, the new credentials apply on next start; the old data remains accessible with the new root credentials.
+
+## Smoke Test
+
+Verify the end-to-end producer → Kafka path:
+
+1. Bring up infrastructure: `make infra-up`
+2. Create topics: `make topics`
+3. List topics to verify: `./scripts/list-topics.sh`
+4. In one terminal, start the producer: `make produce`
+5. In another terminal, consume a sample: `./scripts/consume-sample.sh`
+
+You should see JSON events flowing with keys (user_ids) and structured values.
+
+Topic management helpers:
+
+```sh
+./scripts/create-topics.sh                       # idempotent; safe to re-run
+./scripts/list-topics.sh                         # show all topics
+./scripts/describe-topic.sh customer_events      # partitions, replication, configs
+./scripts/consume-sample.sh --topic customer_events --max-messages 20
+```
+
+Troubleshooting:
+
+- **"Connection refused"** — kafka container may not be healthy yet. Check status with `docker compose -f infrastructure/docker-compose.yml ps`.
+- **Empty consumer output** — producer may not have started yet, or the topic name differs from `customer_events`.
+- **"Topic doesn't exist"** — run `make topics` first.
 
 ## Spark service
 
